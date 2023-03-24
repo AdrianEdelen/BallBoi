@@ -10,11 +10,11 @@
     "Docker": {
       "commandName": "Docker",
       "environmentVariables": {
-        "APIKEY": "MTA4NTU2MDcxNTU4NDIyNTI4MA.G4w1cO.Gthr2TZzdT2j2XNSXp6IT92NmpgBw2ANgNt01s",
-        "GUILDID": "742236603807825930",
-        "BUILDNEWCOMMANDS": "TRUE",
-        "VERSION": "0.01",
-        "RELEASESTREAM": "BLEEDINGEDGE"
+        "APIKEY": "key",
+        "GUILDID": "id",
+        "BUILDNEWCOMMANDS": "deprecated",
+        "VERSION": "deprecated",
+        "RELEASESTREAM": "deprecated"
       }
     }
   }
