@@ -16,4 +16,4 @@ jobs:
     - name: Build the Docker image
 
       
-      run: docker build . --file ./Dockerfile --tag bleeding-edge-$(date +%s)
+      run: docker build . --file .BallBoi/BallBoi/Dockerfile --tag bleeding-edge-$(date +%s)
