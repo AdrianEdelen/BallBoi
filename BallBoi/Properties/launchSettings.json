@@ -1,0 +1,28 @@
+{
+  "profiles": {
+    "BallBoi": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "APIKEY": "MTA4NTU2MDcxNTU4NDIyNTI4MA.GVsaxS.DNEspcBYGioalTF5UV6h0Z8ncuSsEdB2hUEWPA",
+        "GUILDID": "id",
+        "BUILDNEWCOMMANDS": "deprecated",
+        "VERSION": "deprecated",
+        "RELEASESTREAM": "deprecated"
+      }
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "environmentVariables": {
+        "APIKEY": "MTA4NTU2MDcxNTU4NDIyNTI4MA.GVsaxS.DNEspcBYGioalTF5UV6h0Z8ncuSsEdB2hUEWPA",
+        "GUILDID": "id",
+        "BUILDNEWCOMMANDS": "deprecated",
+        "VERSION": "deprecated",
+        "RELEASESTREAM": "deprecated"
+      }
+    }
+  }
+}
