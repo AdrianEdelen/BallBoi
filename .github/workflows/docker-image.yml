@@ -12,5 +12,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - with:
+        context: . 
     - name: Build the Docker image
+
+      
       run: docker build . --file Dockerfile --tag bleeding-edge-$(date +%s)
