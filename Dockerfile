@@ -10,6 +10,6 @@ RUN dotnet restore
 RUN dotnet publish -c Release -o out 
 #build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
-WORKDIR /BallBoi
+WORKDIR /src
 COPY --from=build-env /BallBoi/out .
 ENTRYPOINT ["dotnet", "BallBoi.dll"]
