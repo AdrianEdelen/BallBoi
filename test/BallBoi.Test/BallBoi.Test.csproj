@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BallBoi\BallBoi.csproj" />
+    <ProjectReference Include="..\..\src\BallBoi.Core\BallBoi.Core.csproj" />
   </ItemGroup>
 
 </Project>
