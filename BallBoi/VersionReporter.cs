@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace BallBoi
 {
-    internal static class VersionReporter
+    public static class VersionReporter
     {
-        internal static string Version 
+        public static string Version 
         {
             get
             {
