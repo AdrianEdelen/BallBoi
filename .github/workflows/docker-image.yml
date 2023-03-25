@@ -1,8 +1,6 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ "Dev" ]
   pull_request:
     branches: [ "Dev" ]
 
@@ -15,4 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag Bleeding-edge:$(date +%s)
+      run: docker build . --file Dockerfile --tag Bleeding-edge-$(date +%s)
