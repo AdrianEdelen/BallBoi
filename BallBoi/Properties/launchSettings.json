@@ -1,7 +1,14 @@
 {
   "profiles": {
     "BallBoi": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "APIKEY": "key",
+        "GUILDID": "id",
+        "BUILDNEWCOMMANDS": "deprecated",
+        "VERSION": "deprecated",
+        "RELEASESTREAM": "deprecated"
+      }
     },
     "WSL": {
       "commandName": "WSL2",
