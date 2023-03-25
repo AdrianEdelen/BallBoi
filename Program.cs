@@ -71,6 +71,10 @@ public class Program
             case "version":
                 await command.RespondAsync($"Version: {VersionReporter.Version}");
                 break;
+            case "add":
+                break;
+            case "remove":
+                break;
             default:
                 Console.WriteLine("Unknown Command recieved in SlashCommandhandler");
                 break;
