@@ -3,7 +3,7 @@
     "BallBoi": {
       "commandName": "Project",
       "environmentVariables": {
-        "APIKEY": "MTA4NTU2MDcxNTU4NDIyNTI4MA.GVsaxS.DNEspcBYGioalTF5UV6h0Z8ncuSsEdB2hUEWPA",
+        "APIKEY": "key",
         "GUILDID": "id",
         "BUILDNEWCOMMANDS": "deprecated",
         "VERSION": "deprecated",
@@ -17,7 +17,7 @@
     "Docker": {
       "commandName": "Docker",
       "environmentVariables": {
-        "APIKEY": "MTA4NTU2MDcxNTU4NDIyNTI4MA.GVsaxS.DNEspcBYGioalTF5UV6h0Z8ncuSsEdB2hUEWPA",
+        "APIKEY": "key",
         "GUILDID": "id",
         "BUILDNEWCOMMANDS": "deprecated",
         "VERSION": "deprecated",
