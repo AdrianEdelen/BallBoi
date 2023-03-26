@@ -18,7 +18,7 @@ public class Program
     public async Task MainAsync()
     {
 
-
+        VersionReporter.GetLatestVersionNumber();
 
         //Things the bot can do: Ideas
         //music playlist, remove the embed, after x time, rewrite it to a regular
