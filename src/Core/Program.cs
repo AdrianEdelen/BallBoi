@@ -42,7 +42,7 @@ public class Program
 
         var _interactionService = new InteractionService(_client.Rest);
 
-        if (apiKey != "APIKEY")
+        if (apiKey != "key")
         {
             await _client.LoginAsync(TokenType.Bot, apiKey);
             await _client.StartAsync();
