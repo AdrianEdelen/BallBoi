@@ -42,10 +42,17 @@ public class Program
 
         var _interactionService = new InteractionService(_client.Rest);
 
+        if (apiKey != "key")
+        {
+            await _client.LoginAsync(TokenType.Bot, apiKey);
+            await _client.StartAsync();
+        }
+        else
+        {
+            Console.WriteLine("Apikey not found");
+            Console.WriteLine("Please set the key in envuronment variables and restart the application");
+        }
 
-        await _client.LoginAsync(TokenType.Bot, apiKey);
-
-        await _client.StartAsync();
 
 
 
