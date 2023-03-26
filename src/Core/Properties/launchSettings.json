@@ -4,24 +4,7 @@
       "commandName": "Project",
       "environmentVariables": {
         "APIKEY": "key",
-        "GUILDID": "id",
-        "BUILDNEWCOMMANDS": "deprecated",
-        "VERSION": "deprecated",
-        "RELEASESTREAM": "deprecated"
-      }
-    },
-    "WSL": {
-      "commandName": "WSL2",
-      "distributionName": ""
-    },
-    "Docker": {
-      "commandName": "Docker",
-      "environmentVariables": {
-        "APIKEY": "key",
-        "GUILDID": "id",
-        "BUILDNEWCOMMANDS": "deprecated",
-        "VERSION": "deprecated",
-        "RELEASESTREAM": "deprecated"
+        "GUILDID": "id"
       }
     }
   }
