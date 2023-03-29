@@ -7,9 +7,11 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using System;
 
-
+//Things the bot can do: Ideas
+//music playlist, remove the embed, after x time, rewrite it to a regular
 public class Program
 {
+    private VersionReporter _versionReporter = new();
 
     private DiscordSocketClient _client;
 
@@ -18,14 +20,20 @@ public class Program
     public async Task MainAsync()
     {
 
+        Console.WriteLine($" Version: {_versionReporter.CurrentVersion.FullVersionNumberString}");
+        if (_versionReporter.IsNewerVersionAvailable())
+        {
+            Console.WriteLine("------------------------------------------------------");
+            Console.WriteLine("New Version Available");
+            Console.WriteLine($"{_versionReporter.NextVersion.FullVersionNumberString}");
+            Console.WriteLine($"Release Type: {_versionReporter.NextVersionType}");
+            Console.WriteLine($"Release Date: {_versionReporter.NextVersionDate}");
+            Console.WriteLine("------------------------------------------------------");
+        }
 
-
-        //Things the bot can do: Ideas
-        //music playlist, remove the embed, after x time, rewrite it to a regular
 
         var apiKey = Environment.GetEnvironmentVariable("APIKEY");
         Console.WriteLine(apiKey);
-        Console.WriteLine($" Version: {VersionReporter.Version}");
 
 
         _client = new DiscordSocketClient();
@@ -76,7 +84,7 @@ public class Program
                 await command.RespondAsync($"https://cdn.discordapp.com/attachments/936034644166598760/945888996356149288/image0.jpg");
                 break;
             case "version":
-                await command.RespondAsync($"Version: {VersionReporter.Version}");
+                await command.RespondAsync($"Version: {_versionReporter.CurrentVersion}");
                 break;
             case "add":
                 break;
