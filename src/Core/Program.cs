@@ -84,7 +84,7 @@ public class Program
                 await command.RespondAsync($"https://cdn.discordapp.com/attachments/936034644166598760/945888996356149288/image0.jpg");
                 break;
             case "version":
-                await command.RespondAsync($"Version: {_versionReporter.CurrentVersion}");
+                await command.RespondAsync($"Version: {_versionReporter.CurrentVersion.FullVersionNumberString}");
                 break;
             case "add":
                 break;
