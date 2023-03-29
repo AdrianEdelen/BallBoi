@@ -19,7 +19,7 @@ public class Program
 
     public async Task MainAsync()
     {
-
+        //test comment for push
         Console.WriteLine($" Version: {_versionReporter.CurrentVersion.FullVersionNumberString}");
         if (_versionReporter.IsNewerVersionAvailable())
         {
