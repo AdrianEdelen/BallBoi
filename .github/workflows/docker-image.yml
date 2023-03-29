@@ -3,7 +3,6 @@ name: Docker Image CI
 on:
   pull_request:
     branches: 
-    - master
     - Dev
 
 jobs:
@@ -17,7 +16,7 @@ jobs:
     - name: whats in the Box? (context)
       run: echo $(ls -lah)
     - name: Build the Docker image
-      run: docker build . --file ./BallBoi/Dockerfile --tag bleeding-edge-$(date +%s)
+      run: docker build . --file ./Dockerfile --tag bleeding-edge-$(date +%s)
 
       
       
