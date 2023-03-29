@@ -1,0 +1,23 @@
+name: Docker Image CI
+
+on:
+  pull_request:
+    branches: 
+    - master
+    - Dev
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Ensure directory
+      run: echo $(pwd)
+    - name: whats in the Box? (context)
+      run: echo $(ls -lah)
+    - name: Build the Docker image
+      run: docker build . --file ./Dockerfile --tag bleeding-edge-$(date +%s)
+
+      
+      

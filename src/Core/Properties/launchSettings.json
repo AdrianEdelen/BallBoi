@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "BallBoi": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "APIKEY": "key",
+        "GUILDID": "id"
+      }
+    }
+  }
+}
