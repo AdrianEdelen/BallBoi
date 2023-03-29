@@ -12,4 +12,4 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /BallBoi
 COPY --from=build-env /BallBoi/out .
-ENTRYPOINT ["dotnet", "BallBoi.dll"]
+ENTRYPOINT ["dotnet", "Core.dll"]
