@@ -10,6 +10,7 @@ using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
@@ -29,6 +30,8 @@ public class Program
 
     public async Task MainAsync()
     {
+        using FileStream fileStream = File.Open("users.db", FileMode.Append);
+        fileStream.Close();
         _connection = new SqliteConnection("data Source=users.db");
         Console.WriteLine($" Version: {_versionReporter.CurrentVersion.FullVersionNumberString}");
         if (_versionReporter.IsNewerVersionAvailable())
