@@ -6,6 +6,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Newtonsoft.Json;
 using System;
+using System.Text;
 
 //Things the bot can do: Ideas
 //music playlist, remove the embed, after x time, rewrite it to a regular
@@ -14,6 +15,8 @@ public class Program
     private VersionReporter _versionReporter = new();
 
     private DiscordSocketClient _client;
+    private ulong guildId;
+    private SocketGuild _guild;
 
     public static Task Main(string[] args) => new Program().MainAsync();
 
@@ -33,6 +36,8 @@ public class Program
 
 
         var apiKey = Environment.GetEnvironmentVariable("APIKEY");
+        guildId = ulong.Parse(Environment.GetEnvironmentVariable("GUILDID"));
+
         Console.WriteLine(apiKey);
 
 
@@ -61,6 +66,7 @@ public class Program
             Console.WriteLine("Please set the key in envuronment variables and restart the application");
         }
 
+        _guild = _client.GetGuild(guildId);
 
 
 
@@ -76,20 +82,21 @@ public class Program
         //Block until the application is closed.
         await Task.Delay(-1);
     }
+
+    private void OverWriteAllGlobalCommands()
+    {
+        //_client.BulkOverwriteGlobalApplicationCommandsAsync();
+    }
+
     private async Task SlashCommandHandler(SocketSlashCommand command)
     {
         switch (command.CommandName)
         {
-            case "remember":
-                await command.RespondAsync($"https://cdn.discordapp.com/attachments/936034644166598760/945888996356149288/image0.jpg");
-                break;
-            case "version":
-                await command.RespondAsync($"Version: {_versionReporter.CurrentVersion.FullVersionNumberString}");
-                break;
-            case "add":
-                break;
-            case "remove":
-                break;
+            case "remember": Remember(command); break;
+            case "version":  Version(command); break;
+            case "addrole":  AddRole(command); break;
+            case "removerole": throw new NotImplementedException(); break;
+            case "listrole": ListRoles(command); break;
             default:
                 Console.WriteLine("Unknown Command recieved in SlashCommandhandler");
                 break;
@@ -97,6 +104,8 @@ public class Program
         //await command.RespondAsync($"You executed {command.Data.Name}");
 
     }
+
+
 
     private async Task RegisterCommands()
     {
@@ -110,7 +119,9 @@ public class Program
             var slashCommandList = new List<SlashCommandBuilder>()
             {
                 new SlashCommandBuilder().WithName("remember").WithDescription("Most accidents happen at home"),
-                new SlashCommandBuilder().WithName("version").WithDescription("Display version/about information")
+                new SlashCommandBuilder().WithName("version").WithDescription("Display version/about information"),
+                new SlashCommandBuilder().WithName("listrole").WithDescription("List the roles a user has").AddOption("user", ApplicationCommandOptionType.User, "The user whose Roles you want to list", isRequired: true),
+
             };
             foreach (var slashCommand in slashCommandList)
             {
@@ -128,6 +139,7 @@ public class Program
         }
         catch (ApplicationCommandException exception)
         {
+            Console.WriteLine(exception.Message);
             // If our command was invalid, we should catch an ApplicationCommandException. This exception contains the path of the error as well as the error message. You can serialize the Error field in the exception to get a visual of where your error is.
             var json = JsonConvert.SerializeObject(exception.Errors, Formatting.Indented);
 
@@ -140,5 +152,46 @@ public class Program
         Console.WriteLine(msg.ToString());
         return Task.CompletedTask;
     }
-}
 
+    #region SlashCommands
+    //These Should be event based maybe
+    private async void ListRoles(SocketSlashCommand command)
+    {
+        SocketSlashCommandDataOption user = command.Data.Options.ElementAt(0);
+        SocketGuildUser guildUser = (SocketGuildUser) user.Value;
+        var roles = guildUser.Roles;
+        StringBuilder response = new();
+        foreach (var role in roles)
+        {
+            //Don't put @everyone in this list
+            response.Append($"\n{role.Name}");
+
+        }
+        await command.RespondAsync(response.ToString());
+        var a = true;
+    }
+    private void AddRole(SocketSlashCommand command)
+    {
+        SocketSlashCommandDataOption user = command.Data.Options.ElementAt(0);
+        SocketSlashCommandDataOption role = command.Data.Options.ElementAt(1);
+
+        var a = true;
+        //_guild.GetUser(user.Value);
+        //command.Data.Options
+        //_client.Rest.AddRoleAsync()
+    }
+    private void RemoveRoll(SocketSlashCommand command)
+    {
+
+    }
+    private async void Remember(SocketSlashCommand command)
+    {
+        await command.RespondAsync($"https://cdn.discordapp.com/attachments/936034644166598760/945888996356149288/image0.jpg");
+    }
+    private async void Version(SocketSlashCommand command)
+    {
+        await command.RespondAsync($"Version: {_versionReporter.CurrentVersion.FullVersionNumberString}");
+    }
+
+    #endregion
+}
