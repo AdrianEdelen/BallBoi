@@ -2,6 +2,7 @@
 WORKDIR /BallBoi
 ENV APIKEY=ENTERAPIKEY
 ENV GUILDID=ENTERGUILDID
+ENV OPENAIKEY=ENTEROPENAIKEY
 #copy everything
 COPY . ./ 
 #restore as distinct layers
