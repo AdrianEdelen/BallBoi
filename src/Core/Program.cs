@@ -283,9 +283,9 @@ public class Program
                     }
                     await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
-                    dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
-                    var responseTokens = GPT3Tokenizer.Encode(prompt);
-                    dbHelper.InsertResponse(_connection, user, responseTokens.Count(), response.ToString());
+                    //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
+                    //var responseTokens = GPT3Tokenizer.Encode(prompt);
+                    //dbHelper.InsertResponse(_connection, user, responseTokens.Count(), response.ToString());
                 }
                 else
                 {
