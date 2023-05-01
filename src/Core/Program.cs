@@ -192,7 +192,7 @@ public class Program
 
     private async void ChatWarn(SocketSlashCommand command)
     {
-        await command.RespondAsync("Hello, You will be awarded 100 tokens and issued 10 tokens per hour back up to the 100 token limit. This api costs money so play fair please.");
+        await command.RespondAsync("Hello, You will be awarded 5000 tokens and issued 1 tokens per 208 seconds back up to the 5000 token limit. This api costs money so play fair please.");
 
     }
 
@@ -297,7 +297,7 @@ public class Program
                 Console.WriteLine("User is not registered yet");
                 int result = dbHelper.AddNewUserToUsersTable(_connection, command.User.Id, command.User.Username);
                 //ChatWarn(command);
-                await command.Channel.SendMessageAsync("Hello, You will be awarded 100 tokens and issued 10 tokens per hour back up to the 100 token limit. This api costs money so play fair please.");
+                await command.Channel.SendMessageAsync("Hello, You will be awarded 5000 tokens and issued 1 tokens per 208 seconds back up to the 5000 token limit. This api costs money so play fair please.");
             }
         }
         catch (Exception ex)
