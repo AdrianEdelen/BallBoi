@@ -7,6 +7,7 @@ using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Data.Sqlite;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -132,7 +133,7 @@ public class Program
             }
             //await command.RespondAsync($"You executed {command.Data.Name}");
         }
-        catch(NotImplementedException e)
+        catch (NotImplementedException e)
         {
             await command.RespondAsync("That command isn't ready yet");
         }
@@ -269,32 +270,39 @@ public class Program
                     response.Append($"{command.User.Username} asked: {prompt}\n\n");
 
                     int nextTarget = 0;
-		    bool originalMessage = true;
-	 	    var messageId;
-		    //allow all mentions
-		    await command.ModifyOriginalResponseAsync(msg => msg.allowedMentions = AllowedMentions All { get; })
-		    // set the default value of the lamda Send message to modify the original message
-		    Func<IUserMessage> SendMessage = (x) => await command.ModifyOriginalResponseAsync(x);
+                    bool originalMessage = true;
+                    ulong messageId;
+                    //allow all mentions
+                    await command.ModifyOriginalResponseAsync(msg => msg.AllowedMentions = AllowedMentions.All);
+                    // set the default value of the lamda Send message to modify the original message
+
+                    var SendMessage = command.ModifyOriginalResponseAsync;
+                    //Func<IUserMessage> SendMessage = await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
                     {
-			if (nextTarget > 2000 && originalMessage){
-			  originalMessage=false;
-			  var newMessage = await command.Channel.SendMessageAsync();
-			  messageId=newMessage.Id;
-			  SendMessage = (x) => await command.Channel.ModifyMessageAsync(messageId, x);
-			}
+                        if (nextTarget > 2000 && originalMessage)
+                        {
+                            originalMessage = false;
+                            var newMessage = await command.Channel.SendMessageAsync();
+                            messageId = newMessage.Id;
+                            SendMessage = command.Channel.ModifyMessageAsync;
+                            //SendMessage = (x, y) => command.Channel.ModifyMessageAsync(messageId, x => x.Content = response.ToString());
+                        }
                         response.Append(res.ToString());
                         Console.WriteLine(response.Length);
                         if (response.Length > nextTarget)
                         {
                             nextTarget += 25;
-
-                            SendMessage(msg => msg.Content = response.ToString());
+                            SendMessage = command.ModifyOriginalResponseAsync;
+                            //SendMessage = (x) => command.ModifyOriginalResponseAsync(x => msg.Content = response.ToString());
                         }
+
+                        SendMessage.Invoke((x,y) => messageId, msg => msg.Content = response.ToString());
 
 
                     }
-                    await SendMessage(msg => msg.Content = response.ToString());
+                    await SendMessage.Invoke(messageId, msg => msg.Content = response.ToString());
+                    //await SendMessage(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
                     //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
                     //var responseTokens = GPT3Tokenizer.Encode(prompt);
