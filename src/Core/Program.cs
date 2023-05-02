@@ -269,19 +269,32 @@ public class Program
                     response.Append($"{command.User.Username} asked: {prompt}\n\n");
 
                     int nextTarget = 0;
+		    bool originalMessage = true;
+	 	    var messageId;
+		    //allow all mentions
+		    await command.ModifyOriginalResponseAsync(msg => msg.allowedMentions = AllowedMentions All { get; })
+		    // set the default value of the lamda Send message to modify the original message
+		    Func<IUserMessage> SendMessage = (x) => await command.ModifyOriginalResponseAsync(x);
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
                     {
+			if (nextTarget > 2000 && originalMessage){
+			  originalMessage=false;
+			  var newMessage = await command.Channel.SendMessageAsync();
+			  messageId=newMessage.Id;
+			  SendMessage = (x) => await command.Channel.ModifyMessageAsync(messageId, x);
+			}
                         response.Append(res.ToString());
                         Console.WriteLine(response.Length);
                         if (response.Length > nextTarget)
                         {
                             nextTarget += 25;
-                            await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+
+                            SendMessage(msg => msg.Content = response.ToString());
                         }
 
 
                     }
-                    await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+                    await SendMessage(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
                     //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
                     //var responseTokens = GPT3Tokenizer.Encode(prompt);
