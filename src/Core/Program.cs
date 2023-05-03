@@ -276,7 +276,7 @@ public class Program
                     await command.ModifyOriginalResponseAsync(msg => msg.AllowedMentions = AllowedMentions.All);
                     // set the default value of the lamda Send message to modify the original message
 
-                    var SendMessage = command.ModifyOriginalResponseAsync;
+                    Func<Task<IUserMessage>> SendMessage = command.ModifyOriginalResponseAsync;
                     //Func<IUserMessage> SendMessage = await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
                     {
@@ -293,11 +293,9 @@ public class Program
                         if (response.Length > nextTarget)
                         {
                             nextTarget += 25;
-                            SendMessage = command.ModifyOriginalResponseAsync;
-                            //SendMessage = (x) => command.ModifyOriginalResponseAsync(x => msg.Content = response.ToString());
+							await SendMessage.Invoke(messageId, msg => msg.Content = response.ToString());
                         }
 
-                        SendMessage.Invoke((x,y) => messageId, msg => msg.Content = response.ToString());
 
 
                     }
