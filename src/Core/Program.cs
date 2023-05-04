@@ -276,7 +276,10 @@ public class Program
                     await command.ModifyOriginalResponseAsync(msg => msg.AllowedMentions = AllowedMentions.All);
                     // set the default value of the lamda Send message to modify the original message
 
-                    Func<Task<IUserMessage>> SendMessage = command.ModifyOriginalResponseAsync;
+                    //public delegate void SendMessage<T>();
+
+				    Action<Action<Discord.MessageProperties>> SendMessage = async x =>  { await command.ModifyOriginalResponseAsync(x);}
+
                     //Func<IUserMessage> SendMessage = await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
                     {
@@ -285,21 +288,21 @@ public class Program
                             originalMessage = false;
                             var newMessage = await command.Channel.SendMessageAsync();
                             messageId = newMessage.Id;
-                            SendMessage = command.Channel.ModifyMessageAsync;
-                            //SendMessage = (x, y) => command.Channel.ModifyMessageAsync(messageId, x => x.Content = response.ToString());
+                            //SendMessage = command.Channel.ModifyMessageAsync;
+                            SendMessage = async x => { await command.Channel.ModifyMessageAsync(messageId, x => x.Content = response.ToString());}
                         }
                         response.Append(res.ToString());
                         Console.WriteLine(response.Length);
                         if (response.Length > nextTarget)
                         {
                             nextTarget += 25;
-							await SendMessage.Invoke(messageId, msg => msg.Content = response.ToString());
+							SendMessage.Invoke(msg => msg.Content = response.ToString());
                         }
 
 
 
                     }
-                    await SendMessage.Invoke(messageId, msg => msg.Content = response.ToString());
+                    SendMessage.Invoke(msg => msg.Content = response.ToString());
                     //await SendMessage(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
                     //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
