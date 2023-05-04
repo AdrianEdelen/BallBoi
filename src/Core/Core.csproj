@@ -7,6 +7,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
     <FileVersion>0.0.1.5</FileVersion>
+	<LanguageVersion>7.3</LanguageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AI.Dev.OpenAI.GPT" Version="1.0.2" />
