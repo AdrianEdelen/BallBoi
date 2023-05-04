@@ -291,13 +291,18 @@ public class Program
                             newMsg = await command.Channel.SendMessageAsync(response.ToString());
                         }
                         if (curMsg == 0)
+                        {
                             if (response.Length > nextTarget)
                             {
                                 nextTarget += 25;
                                 await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                             }
+                        }
                         else
+                        {
                             await newMsg.ModifyAsync(msg => msg.Content = response.ToString());
+
+                        }
                     }
                     await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
