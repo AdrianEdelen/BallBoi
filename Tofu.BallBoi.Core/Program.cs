@@ -1,5 +1,4 @@
 using Tofu.BallBoi.Core.Services;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,7 +13,6 @@ builder.Services.AddOpenAi(settings =>
 });
 builder.Services.AddScoped<slashCommandService>();
 builder.Services.AddScoped<ChatService>();
-
 
 
 builder.Services.AddControllers();

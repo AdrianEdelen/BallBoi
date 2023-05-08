@@ -1,27 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Tofu.BallBoi.Abstractions;
-using Tofu.BallBoi.Core;
+using Tofu.BallBoi.Abstractions.DataTransferObjects;
+using Tofu.BallBoi.Abstractions.Interfaces;
+using Tofu.BallBoi.Core.Models;
 
 namespace Tofu.BallBoi.Data.Controllers
 {
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
 
-        public UserController(IUserRepository userRepository)
+        public UsersController(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        [HttpGet("/Users")]
+        public async Task<IActionResult> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllUsersAsync();
             return Ok(users);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(int id)
+        [HttpGet("/Users/{id}")]
+        public async Task<IActionResult> GetUserByIdAsync(int id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
@@ -31,15 +32,15 @@ namespace Tofu.BallBoi.Data.Controllers
             return Ok(user);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] User user)
+        [HttpPost("/Users")]
+        public async Task<IActionResult> AddUser([FromBody] UserDTO user)
         {
             await _userRepository.AddUserAsync(user);
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+            return CreatedAtAction(nameof(GetUserByIdAsync), new { id = user.Id }, user);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        [HttpPut("/Users")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO user)
         {
             if (id != user.Id)
             {
@@ -49,11 +50,11 @@ namespace Tofu.BallBoi.Data.Controllers
             return Ok(user);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("/Users/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            await _userRepository.DeleteUserAsync(id);
-            return Ok();
+            var result = await _userRepository.DeleteUserAsync(id);
+            return Ok(result);
         }
 
     }

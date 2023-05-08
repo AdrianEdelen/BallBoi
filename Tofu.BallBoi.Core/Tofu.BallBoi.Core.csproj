@@ -19,4 +19,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Tofu.BallBoi.Abstractions\Tofu.BallBoi.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

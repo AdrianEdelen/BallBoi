@@ -1,7 +1,7 @@
 using Tofu.BallBoi.Data;
-using Tofu.BallBoi.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Tofu.BallBoi.Abstractions.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

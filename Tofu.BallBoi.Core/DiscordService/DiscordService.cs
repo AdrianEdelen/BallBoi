@@ -4,6 +4,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using System.Security.Cryptography;
 using System.Text;
+using Tofu.BallBoi.Core.Models;
 
 namespace Tofu.BallBoi.Core.DiscordService
 {
@@ -12,11 +13,13 @@ namespace Tofu.BallBoi.Core.DiscordService
         private readonly ILogger<DiscordService> _logger;
         private readonly DiscordSocketClient _discordSocketClient;
         private readonly InteractionService _interactionService;
-        public DiscordService(ILogger<DiscordService> logger)
+        private readonly UserService _userService;
+        public DiscordService(ILogger<DiscordService> logger, UserService userService)
         {
             _logger = logger;
             _discordSocketClient = new();
             _interactionService = new(_discordSocketClient);
+            _userService = userService;
         }
 
         private void InitializeDiscordClient()
@@ -101,111 +104,110 @@ namespace Tofu.BallBoi.Core.DiscordService
         private async void ChatAsync(SocketSlashCommand command)
         {
 
-            //var user = GetUserFromCommand(command);
-            //Console.WriteLine(user.Id);
-            //Console.WriteLine(user.DisplayName);
             var warnAknowledged = false;
             var tokensAvailable = false;
 
-            //the user management should be split into a seperate microservice
+            var users = await _userService.GetAllUsersAsync();
+            _logger.LogInformation("Getting All users from DB");
 
+            //initial response to identify activity
             command.RespondAsync($"Processing prompt");
+
             try
             {
-                Console.WriteLine("Received chat prompt");
 
-                dbHelper.CreateUserTableIfNotExists(_connection);
-                dbHelper.CreatePromptTableIfNotExists(_connection);
-                dbHelper.CreateResponseTableIfNotExists(_connection);
-                var username = command.User.Username;
-                if (!dbHelper.UserExistsInDB(_connection, command.User.Id))
-                {
-
-                    Console.WriteLine("User is not registered yet");
-                    int result = dbHelper.AddNewUserToUsersTable(_connection, command.User.Id, command.User.Username);
-                    Console.WriteLine($"Added User to DB, Result: {result}");
-                    //ChatWarn(command);
-                    //await command.Channel.SendMessageAsync("Hello, You will be awarded 5000 tokens and issued 1 tokens per 208 seconds back up to the 5000 token limit. This api costs money so play fair please.");
-
-                }
-
-                var user = dbHelper.GetUserFromUsersTable(_connection, command.User.Id);
-                string prompt = command.Data.Options.ElementAt(0).Value.ToString();
-
-                Console.WriteLine($"User: {username} | prompt: {prompt}");
-
-                var tokens = GPT3Tokenizer.Encode(prompt);
-                user = dbHelper.GetUpdatedUser(_connection, user);
-                if (user.AvailableTokens > tokens.Count())
-                {
-                    Console.WriteLine("user has enough tokens");
-                    dbHelper.UpdateUserTokens(_connection, user, tokens.Count());
-
-                    var chat = _openAI.Chat.CreateConversation();
-                    chat.AppendUserInput(prompt);
-
-                    var channel = command.Channel;
-                    var response = new StringBuilder();
-
-                    response.Append($"{command.User.Username} asked: {prompt}\n\n");
-
-                    //iterate over the streaming response from the api and send it out in discord messages.
-                    //discord has a 2000 character limit so we need to split long messages into groups.
-                    int nextTarget = 0;
-                    int curMsgLength = 0;
-                    int curMsg = 0;
-                    RestUserMessage newMsg = null;
-                    await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
-                    {
-                        curMsgLength += res.Length;
-                        response.Append(res.ToString());
-                        Console.WriteLine(response.Length);
-                        if (curMsgLength > 1900)
-                        {
-                            response = new StringBuilder();
-                            response.Append(res.ToString());
-                            curMsg++;
-                            curMsgLength = 0;
-                            await command.Channel.SendMessageAsync("...");
-                            newMsg = await command.Channel.SendMessageAsync(response.ToString());
-                        }
-                        if (curMsg == 0)
-                        {
-                            if (response.Length > nextTarget)
-                            {
-                                nextTarget += 25;
-                                await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
-                            }
-                        }
-                        else
-                        {
-                            await newMsg.ModifyAsync(msg => msg.Content = response.ToString());
-
-                        }
-                    }
-                    await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
-                    Console.WriteLine("done processing");
-                    //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
-                    //var responseTokens = GPT3Tokenizer.Encode(prompt);
-                    //dbHelper.InsertResponse(_connection, user, responseTokens.Count(), response.ToString());
-                }
-                else
-                {
-                    Console.WriteLine("User does not have enough tokens");
-                    //not enough tokens
-                    await command.Channel.SendMessageAsync("Sorry, You don't have enough tokens, please try again later.");
-                }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine(ex);
+                _logger.LogWarning("An error occurred while processing the message");
+                _logger.LogWarning(e.Message);
                 await command.Channel.SendMessageAsync("an error occurred, try again");
                 await command.Channel.SendMessageAsync($"https://cdn.discordapp.com/attachments/936034644166598760/945888996356149288/image0.jpg");
-
             }
+            //try
+            //{
+            //    Console.WriteLine("Received chat prompt");
+
+            //    var username = command.User.Username;
+            //    if (!dbHelper.UserExistsInDB(_connection, command.User.Id))
+            //    {
+
+            //        Console.WriteLine("User is not registered yet");
+            //        int result = dbHelper.AddNewUserToUsersTable(_connection, command.User.Id, command.User.Username);
+            //        Console.WriteLine($"Added User to DB, Result: {result}");
+            //        //ChatWarn(command);
+            //        //await command.Channel.SendMessageAsync("Hello, You will be awarded 5000 tokens and issued 1 tokens per 208 seconds back up to the 5000 token limit. This api costs money so play fair please.");
+
+            //    }
+
+            //    var user = dbHelper.GetUserFromUsersTable(_connection, command.User.Id);
+            //    string prompt = command.Data.Options.ElementAt(0).Value.ToString();
+
+            //    Console.WriteLine($"User: {username} | prompt: {prompt}");
+
+            //    var tokens = GPT3Tokenizer.Encode(prompt);
+            //    user = dbHelper.GetUpdatedUser(_connection, user);
+            //    if (user.AvailableTokens > tokens.Count())
+            //    {
+            //        Console.WriteLine("user has enough tokens");
+            //        dbHelper.UpdateUserTokens(_connection, user, tokens.Count());
+
+            //        var chat = _openAI.Chat.CreateConversation();
+            //        chat.AppendUserInput(prompt);
+
+            //        var channel = command.Channel;
+            //        var response = new StringBuilder();
+
+            //        response.Append($"{command.User.Username} asked: {prompt}\n\n");
+
+            //        //iterate over the streaming response from the api and send it out in discord messages.
+            //        //discord has a 2000 character limit so we need to split long messages into groups.
+            //        int nextTarget = 0;
+            //        int curMsgLength = 0;
+            //        int curMsg = 0;
+            //        RestUserMessage newMsg = null;
+            //        await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
+            //        {
+            //            curMsgLength += res.Length;
+            //            response.Append(res.ToString());
+            //            Console.WriteLine(response.Length);
+            //            if (curMsgLength > 1900)
+            //            {
+            //                response = new StringBuilder();
+            //                response.Append(res.ToString());
+            //                curMsg++;
+            //                curMsgLength = 0;
+            //                await command.Channel.SendMessageAsync("...");
+            //                newMsg = await command.Channel.SendMessageAsync(response.ToString());
+            //            }
+            //            if (curMsg == 0)
+            //            {
+            //                if (response.Length > nextTarget)
+            //                {
+            //                    nextTarget += 25;
+            //                    await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+            //                }
+            //            }
+            //            else
+            //            {
+            //                await newMsg.ModifyAsync(msg => msg.Content = response.ToString());
+
+            //            }
+            //        }
+            //        await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+            //        Console.WriteLine("done processing");
+            //        //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
+            //        //var responseTokens = GPT3Tokenizer.Encode(prompt);
+            //        //dbHelper.InsertResponse(_connection, user, responseTokens.Count(), response.ToString());
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("User does not have enough tokens");
+            //        //not enough tokens
+            //        await command.Channel.SendMessageAsync("Sorry, You don't have enough tokens, please try again later.");
+            //    }
+            //}
+            //catch (Exception ex){}
         }
-
-
-
     }
 }

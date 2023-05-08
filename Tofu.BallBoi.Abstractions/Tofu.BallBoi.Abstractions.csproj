@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Tofu.BallBoi.Core\Tofu.BallBoi.Core.csproj" />
-  </ItemGroup>
-
 </Project>

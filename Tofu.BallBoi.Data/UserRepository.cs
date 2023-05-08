@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
-using Tofu.BallBoi.Abstractions;
+using Tofu.BallBoi.Abstractions.DataTransferObjects;
+using Tofu.BallBoi.Abstractions.Interfaces;
 using Tofu.BallBoi.Core;
 namespace Tofu.BallBoi.Data;
 internal class UserRepository : IUserRepository
@@ -10,7 +11,7 @@ internal class UserRepository : IUserRepository
     {
         _context = databaseContext;
     }
-    public async Task<User> AddUserAsync(User user)
+    public async Task<UserDTO> AddUserAsync(UserDTO user)
     {
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
@@ -30,12 +31,12 @@ internal class UserRepository : IUserRepository
         return true;
     }
 
-    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    public async Task<IEnumerable<UserDTO>> GetAllUsersAsync()
     {
         return await _context.Users.ToListAsync();
     }
 
-    public async Task<User>? GetUserByIdAsync(int id)
+    public async Task<UserDTO>? GetUserByIdAsync(int id)
     {
         var matchingUser = await _context.Users.Where(x => x.Id == id).FirstOrDefaultAsync();
         if (matchingUser == null)
@@ -46,7 +47,7 @@ internal class UserRepository : IUserRepository
 
     }
 
-    public async Task<User> UpdateUserAsync(User user)
+    public async Task<UserDTO> UpdateUserAsync(UserDTO user)
     {
         _context.Attach(user);
         _context.Entry(user).State = EntityState.Modified;
