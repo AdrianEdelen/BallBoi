@@ -11,7 +11,9 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http.Headers;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 //Things the bot can do: Ideas
@@ -132,7 +134,7 @@ public class Program
             }
             //await command.RespondAsync($"You executed {command.Data.Name}");
         }
-        catch(NotImplementedException e)
+        catch (NotImplementedException e)
         {
             await command.RespondAsync("That command isn't ready yet");
         }
@@ -268,18 +270,39 @@ public class Program
 
                     response.Append($"{command.User.Username} asked: {prompt}\n\n");
 
+                    //iterate over the streaming response from the api and send it out in discord messages.
+                    //discord has a 2000 character limit so we need to split long messages into groups.
                     int nextTarget = 0;
+                    int curMsgLength = 0;
+                    int curMsg = 0;
+                    RestUserMessage newMsg = null;
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
                     {
+                        curMsgLength += res.Length;
                         response.Append(res.ToString());
                         Console.WriteLine(response.Length);
-                        if (response.Length > nextTarget)
+                        if (curMsgLength > 1900)
                         {
-                            nextTarget += 25;
-                            await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+                            response = new StringBuilder();
+                            response.Append(res.ToString());
+                            curMsg++;
+                            curMsgLength = 0;
+                            await command.Channel.SendMessageAsync("...");
+                            newMsg = await command.Channel.SendMessageAsync(response.ToString());
                         }
+                        if (curMsg == 0)
+                        {
+                            if (response.Length > nextTarget)
+                            {
+                                nextTarget += 25;
+                                await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+                            }
+                        }
+                        else
+                        {
+                            await newMsg.ModifyAsync(msg => msg.Content = response.ToString());
 
-
+                        }
                     }
                     await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
