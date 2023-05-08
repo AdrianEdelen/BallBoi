@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tofu.BallBoi.Core", "Tofu.BallBoi.Core\Tofu.BallBoi.Core.csproj", "{7680C679-5EB4-4922-9987-EA8C11C012A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tofu.BallBoi.Core", "Tofu.BallBoi.Core\Tofu.BallBoi.Core.csproj", "{7680C679-5EB4-4922-9987-EA8C11C012A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tofu.BallBoi.Web", "Tofu.BallBoi.Web\Tofu.BallBoi.Web.csproj", "{C8A1E62A-A28D-4C07-A7C6-7DC2AF87320D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tofu.BallBoi.Web", "Tofu.BallBoi.Web\Tofu.BallBoi.Web.csproj", "{C8A1E62A-A28D-4C07-A7C6-7DC2AF87320D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tofu.BallBoi.Data", "Tofu.BallBoi.Data\Tofu.BallBoi.Data.csproj", "{162CAAA8-7080-4FC0-9348-474B4A6E8CCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tofu.BallBoi.Data", "Tofu.BallBoi.Data\Tofu.BallBoi.Data.csproj", "{162CAAA8-7080-4FC0-9348-474B4A6E8CCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tofu.BallBoi.Gateway", "Tofu.BallBoi.Gateway\Tofu.BallBoi.Gateway.csproj", "{27129B27-3E63-49DA-BE09-72985A0F92E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tofu.BallBoi.Gateway", "Tofu.BallBoi.Gateway\Tofu.BallBoi.Gateway.csproj", "{27129B27-3E63-49DA-BE09-72985A0F92E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tofu.BallBoi.Authentication", "Tofu.BallBoi.Authentication\Tofu.BallBoi.Authentication.csproj", "{895EDA3D-0186-459D-9354-4338BD682C88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tofu.BallBoi.Authentication", "Tofu.BallBoi.Authentication\Tofu.BallBoi.Authentication.csproj", "{895EDA3D-0186-459D-9354-4338BD682C88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tofu.BallBoi.Abstractions", "Tofu.BallBoi.Abstractions\Tofu.BallBoi.Abstractions.csproj", "{423A501C-B88D-48AA-BC36-91021EB62489}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{895EDA3D-0186-459D-9354-4338BD682C88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{895EDA3D-0186-459D-9354-4338BD682C88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{895EDA3D-0186-459D-9354-4338BD682C88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{423A501C-B88D-48AA-BC36-91021EB62489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{423A501C-B88D-48AA-BC36-91021EB62489}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{423A501C-B88D-48AA-BC36-91021EB62489}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{423A501C-B88D-48AA-BC36-91021EB62489}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
