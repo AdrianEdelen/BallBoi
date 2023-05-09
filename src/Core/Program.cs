@@ -278,7 +278,7 @@ public class Program
 
                     //public delegate void SendMessage<T>();
 
-				    Action<Action<Discord.MessageProperties>> SendMessage = async x =>  { await command.ModifyOriginalResponseAsync(x);}
+				    Action<Action<Discord.MessageProperties>> SendMessage = async x =>  { await command.ModifyOriginalResponseAsync(x);};
 
                     //Func<IUserMessage> SendMessage = await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
@@ -289,7 +289,7 @@ public class Program
                             var newMessage = await command.Channel.SendMessageAsync();
                             messageId = newMessage.Id;
                             //SendMessage = command.Channel.ModifyMessageAsync;
-                            SendMessage = async x => { await command.Channel.ModifyMessageAsync(messageId, x => x.Content = response.ToString());}
+                            SendMessage = async x => { await command.Channel.ModifyMessageAsync(messageId, x => x.Content = response.ToString());};
                         }
                         response.Append(res.ToString());
                         Console.WriteLine(response.Length);
