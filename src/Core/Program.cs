@@ -272,39 +272,53 @@ public class Program
                     int nextTarget = 0;
                     bool originalMessage = true;
                     ulong messageId;
-                    //allow all mentions
-                    await command.ModifyOriginalResponseAsync(msg => msg.AllowedMentions = AllowedMentions.All);
+					StringBuilder responseBuffer = new StringBuilder();
+					int responseBufferLength = 50;
+                    ////allow all mentions
+                    //await command.ModifyOriginalResponseAsync(msg => msg.AllowedMentions = AllowedMentions.All);
                     // set the default value of the lamda Send message to modify the original message
 
                     //public delegate void SendMessage<T>();
-
 				    Action<Action<Discord.MessageProperties>> SendMessage = async x =>  { await command.ModifyOriginalResponseAsync(x);};
 
                     //Func<IUserMessage> SendMessage = await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
                     {
-                        if (nextTarget > 2000 && originalMessage)
-                        {
-                            originalMessage = false;
-                            var newMessage = await command.Channel.SendMessageAsync();
-                            messageId = newMessage.Id;
-                            //SendMessage = command.Channel.ModifyMessageAsync;
-                            SendMessage = async x => { await command.Channel.ModifyMessageAsync(messageId, x => x.Content = response.ToString());};
-                        }
-                        response.Append(res.ToString());
+						Console.WriteLine("response: "+ res);
+						response.Append(res.ToString());
                         Console.WriteLine(response.Length);
-                        if (response.Length > nextTarget)
-                        {
-                            nextTarget += 25;
-							SendMessage.Invoke(msg => msg.Content = response.ToString());
+						Console.WriteLine("token buffer count: " +nextTarget);
+
+						if (response.Length >= 2000 && originalMessage){
+
+							originalMessage = false;
+							var newMessage = await command.Channel.SendMessageAsync("...");
+							messageId = (ulong) newMessage.Id;
+							response.Clear();
+							response.Append(res.ToString());
+							Console.WriteLine("sent new message " + messageId);
+							SendMessage = async x => { await command.Channel.ModifyMessageAsync(messageId, msg => msg.Content = response.ToString());};
+						}
+
+                        if (response.Length>=nextTarget){
+							nextTarget+=responseBufferLength;
+							Console.WriteLine("response buffer: "+ responseBuffer);
+						    SendMessage(msg => msg.Content = response.ToString());
+						    responseBuffer.Clear();
                         }
 
 
 
                     }
-                    SendMessage.Invoke(msg => msg.Content = response.ToString());
+					if (response.Length !=0){
+							SendMessage(msg => msg.Content = response.ToString());
+							responseBuffer.Clear();
+					}
                     //await SendMessage(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
+                    Console.WriteLine(response);
+
+					
                     //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
                     //var responseTokens = GPT3Tokenizer.Encode(prompt);
                     //dbHelper.InsertResponse(_connection, user, responseTokens.Count(), response.ToString());
