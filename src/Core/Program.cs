@@ -104,7 +104,7 @@ public class Program
 
         while (await timer.WaitForNextTickAsync())
         {
-            RewardTokens(_connection);
+            //RewardTokens(_connection);
         }
 
 
