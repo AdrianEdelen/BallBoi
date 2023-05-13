@@ -15,6 +15,10 @@ using System.Net.Http.Headers;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Google.Apis.Services;
+using Google.Apis.YouTube.v3;
+using System.Text.RegularExpressions;
+using Google.Apis.YouTube.v3.Data;
 
 //Things the bot can do: Ideas
 //music playlist, remove the embed, after x time, rewrite it to a regular
@@ -48,7 +52,7 @@ public class Program
 
 
         var apiKey = Environment.GetEnvironmentVariable("APIKEY");
-        guildId = ulong.Parse(Environment.GetEnvironmentVariable("GUILDID"));
+        //guildId = ulong.Parse(Environment.GetEnvironmentVariable("GUILDID"));
 
         Console.WriteLine(apiKey);
 
@@ -128,6 +132,7 @@ public class Program
                 case "chat": ChatAsync(command); break;
                 case "checkavailabletokens": UserTokenCheck(command); break;
                 case "checkmessagetoken": PromptTokenCheck(command); break;
+                case "video": HandleVideoCommand(command); break;
                 default:
                     Console.WriteLine("Unknown Command recieved in SlashCommandhandler");
                     break;
@@ -161,11 +166,21 @@ public class Program
                 new SlashCommandBuilder().WithName("chat").WithDescription("Ask Ballboi a question").AddOption("message", ApplicationCommandOptionType.String, "Your prompt", isRequired: true),
                 new SlashCommandBuilder().WithName("checkavailabletokens").WithDescription("Check how many tokens are in your account"),
                 new SlashCommandBuilder().WithName("checkmessagetoken").WithDescription("Check how many tokens a given message is"),
+                new SlashCommandBuilder().WithName("video").WithDescription("link a video to the videos channel").AddOption("url", ApplicationCommandOptionType.String,"the link to the video", isRequired: true),
             };
             foreach (var slashCommand in slashCommandList)
             {
-                Console.WriteLine($"Adding Slash Command (Global) {slashCommand.Name}");
-                await _client.CreateGlobalApplicationCommandAsync(slashCommand.Build());
+                var commandExists = globalCommands.Select(x => x.Name == slashCommand.Name).Any();
+                if (commandExists) 
+                {
+                    Console.WriteLine($"Command {slashCommand.Name} already registered, skipping...");
+                }
+                else
+                {
+                    Console.WriteLine($"Adding Slash Command (Global) {slashCommand.Name}");
+                    await _client.CreateGlobalApplicationCommandAsync(slashCommand.Build());
+                }
+                
             }
 
             var messageCommandList = new List<MessageCommandBuilder>() { };
@@ -194,7 +209,42 @@ public class Program
 
     #region SlashCommands
     //These Should be event based maybe
+    private async void HandleVideoCommand(SocketSlashCommand cmd)
+    {
+        var vidUrl = cmd.Data.Options.ElementAt(0).Value.ToString();
+        var youtubeMatch = Regex.Match(vidUrl, @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)");
+        var vidId = youtubeMatch.Success ? youtubeMatch.Groups[1].Value : String.Empty;
+        if (!String.IsNullOrEmpty(vidId))
+        {
+            Video vid;
+            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            {
+                ApiKey = Environment.GetEnvironmentVariable("YTAPI"),
+                ApplicationName = this.GetType().ToString()
+            });
 
+            var videosListRequest = youtubeService.Videos.List("snippet,statistics");
+            videosListRequest.Id = vidId;
+            var videoListResponse = await videosListRequest.ExecuteAsync();
+
+            if (videoListResponse.Items.Count > 0)
+            {
+                vid = videoListResponse.Items[0];
+                Console.WriteLine("Title: " + vid.Snippet.Title);
+                Console.WriteLine("View Count: " + vid.Statistics.ViewCount);
+                Console.WriteLine("Description: " + vid.Snippet.Description);
+
+                IForumChannel vidForumChan = (SocketForumChannel)await _client.GetChannelAsync(1106656250776784967);
+                var post = await vidForumChan.CreatePostAsync(title: vid.Snippet.Title, ThreadArchiveDuration.OneDay, text: vidUrl);
+                await cmd.RespondAsync($"New Video: {post.Mention}");
+            }
+            else
+            {
+                Console.WriteLine("Invalid video ID");
+                await cmd.RespondAsync("Invalid Video ID");
+            }
+        }
+    }
     private async void ChatWarn(SocketSlashCommand command)
     {
         await command.RespondAsync("Hello, You will be awarded 5000 tokens and issued 1 tokens per 208 seconds back up to the 5000 token limit. This api costs money so play fair please.");
