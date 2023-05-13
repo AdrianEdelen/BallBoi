@@ -29,38 +29,47 @@ public class VersionReporter
 
     public async Task<Core.Version> GetLatestVersionNumber()
     {
-        HttpClient client = new HttpClient();
-
-        client.BaseAddress = new Uri("https://api.github.com/repos/adrianedelen/ballboi/releases/latest");
-
-        client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "http://developer.github.com/v3/#ballboi");
-        //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-        // List data response.
-        Core.Version version;
-        HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/adrianedelen/ballboi/releases/latest").Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadAsStringAsync();
-            dynamic releaseInfo = JsonConvert.DeserializeObject<dynamic>(result);
+            HttpClient client = new HttpClient();
+
+            client.BaseAddress = new Uri("https://api.github.com/repos/adrianedelen/ballboi/releases/latest");
+
+            client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "http://developer.github.com/v3/#ballboi");
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            // List data response.
+            Core.Version version;
+            HttpResponseMessage response = client.GetAsync("https://api.github.com/repos/adrianedelen/ballboi/releases/latest").Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                dynamic releaseInfo = JsonConvert.DeserializeObject<dynamic>(result);
 
 
-            NextVersionDescription = releaseInfo.body.ToString();
-            NextVersionDate = DateTime.Parse(releaseInfo.created_at.ToString());
-            NextVersionType = bool.Parse(releaseInfo.prerelease.ToString()) ? "Optional" : "Recommended";
+                NextVersionDescription = releaseInfo.body.ToString();
+                NextVersionDate = DateTime.Parse(releaseInfo.created_at.ToString());
+                NextVersionType = bool.Parse(releaseInfo.prerelease.ToString()) ? "Optional" : "Recommended";
 
-            string releaseName = releaseInfo.name.ToString();
-            version = new Core.Version(releaseName);
+                string releaseName = releaseInfo.name.ToString();
+                version = new Core.Version(releaseName);
+            }
+            else
+            {
+                Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
+                throw new NotImplementedException();
+                version = new Core.Version();
+            }
+
+            return version;
+            client.Dispose();
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
-            throw new NotImplementedException();
-            version = new Core.Version();
+            Console.WriteLine("Invalid Version Number");
+            return new Core.Version();
         }
-
-        return version;
-        client.Dispose();
+        
     }
 
     public string GetReleaseStream()
