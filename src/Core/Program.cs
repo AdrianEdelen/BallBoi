@@ -171,16 +171,18 @@ public class Program
             foreach (var slashCommand in slashCommandList)
             {
                 var commandExists = globalCommands.Select(x => x.Name == slashCommand.Name).Any();
-                if (commandExists) 
-                {
-                    Console.WriteLine($"Command {slashCommand.Name} already registered, skipping...");
-                }
-                else
-                {
-                    Console.WriteLine($"Adding Slash Command (Global) {slashCommand.Name}");
-                    await _client.CreateGlobalApplicationCommandAsync(slashCommand.Build());
-                }
-                
+                //if (commandExists) 
+                //{
+                //    Console.WriteLine($"Command {slashCommand.Name} already registered, skipping...");
+                //}
+                //else
+                //{
+                //    Console.WriteLine($"Adding Slash Command (Global) {slashCommand.Name}");
+                //    await _client.CreateGlobalApplicationCommandAsync(slashCommand.Build());
+                //}
+                Console.WriteLine($"Adding Slash Command (Global) {slashCommand.Name}");
+                await _client.CreateGlobalApplicationCommandAsync(slashCommand.Build());
+
             }
 
             var messageCommandList = new List<MessageCommandBuilder>() { };
