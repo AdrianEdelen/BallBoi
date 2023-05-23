@@ -110,6 +110,7 @@ public class Program
 
         //ChatAsync();
         //Block until the application is closed.
+        Console.WriteLine("Ready");
         await Task.Delay(-1);
     }
 
@@ -236,8 +237,10 @@ public class Program
                 Console.WriteLine("View Count: " + vid.Statistics.ViewCount);
                 Console.WriteLine("Description: " + vid.Snippet.Description);
 
-                IForumChannel vidForumChan = (SocketForumChannel)await _client.GetChannelAsync(1106579191937384560);
+                IForumChannel vidForumChan = (SocketForumChannel)await _client.GetChannelAsync(1106656250776784967);
                 var post = await vidForumChan.CreatePostAsync(title: vid.Snippet.Title, ThreadArchiveDuration.OneDay, text: vidUrl);
+                
+                await post.SendMessageAsync($"Posted by: {cmd.User.Mention} \n Views: {vid.Statistics.ViewCount:n0} \n Uploaded By: {vid.Snippet.ChannelTitle}");
                 await cmd.RespondAsync($"New Video: {post.Mention}");
             }
             else
