@@ -27,6 +27,58 @@ namespace Core
             conn.Close();
             return rowsAffected;
         }
+        internal static async Task<long> InsertMessage(SqliteConnection conn, string message)
+        {
+            CreateMessageTableIfNotExists(conn);
+            conn.Open();
+            Console.WriteLine($"inserting message to DB");
+
+            var sqlString = $"INSERT INTO MESSAGES (MESSAGE) VALUES (@message); SELECT last_insert_rowid();";
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = sqlString;
+            cmd.Parameters.AddWithValue("@message", message);
+            var rowId = (long)cmd.ExecuteScalar();
+            Console.WriteLine($"message id {rowId}");
+             
+            
+            conn.Close();
+            return rowId;
+        }
+        internal static string GetMessage(SqliteConnection conn, long id)
+        {
+            if (id == -1) return null;
+            conn.Open();
+            Console.WriteLine($"Getting message: {id} from DB");
+            SqliteDataReader reader;
+            SqliteCommand cmd = conn.CreateCommand();
+            cmd.CommandText = $"SELECT * FROM MESSAGES WHERE ID = @id;";
+            cmd.Parameters.AddWithValue("@id", id);
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                Console.WriteLine($"Found message {id}");
+                return reader.GetString(1);
+                //conn.Close();
+
+            }
+            Console.WriteLine("No Message found");
+            conn.Close();
+            return null;
+        }
+        internal static int CreateMessageTableIfNotExists(SqliteConnection conn)
+        {
+            conn.Open();
+            Console.WriteLine("Creating Message Table if it doesn't exist");
+            var sqlString = $"CREATE TABLE IF NOT EXISTS MESSAGES (Id INTEGER PRIMARY KEY, MESSAGE TEXT NOT NULL)";
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = sqlString;
+            var rowsAffected = cmd.ExecuteNonQuery();
+            Console.WriteLine($"Rows Affected: {rowsAffected}");
+            conn.Close();
+            return rowsAffected;
+        }
         internal static int CreatePromptTableIfNotExists(SqliteConnection conn)
         {
             conn.Open();

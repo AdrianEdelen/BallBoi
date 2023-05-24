@@ -19,6 +19,13 @@ using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using System.Text.RegularExpressions;
 using Google.Apis.YouTube.v3.Data;
+using System.Runtime.InteropServices;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using Newtonsoft.Json.Converters;
+using OpenAI_API.Moderation;
+using System.Linq;
+using System.Data.Common;
 
 //Things the bot can do: Ideas
 //music playlist, remove the embed, after x time, rewrite it to a regular
@@ -64,8 +71,9 @@ public class Program
         _client.Log += Log;
         _client.Ready += ClientReady;
         _client.SlashCommandExecuted += SlashCommandHandler;
-
-
+        _client.ModalSubmitted += HandleModalSubmitted;
+        //_client.ButtonExecuted += HandleButtonExecuted;
+        _client.InteractionCreated += HandleInteractionCreated;
 
         // Some alternative options would be to keep your token in an Environment Variable or a standalone file.
         // var token = Environment.GetEnvironmentVariable("NameOfYourEnvironmentVariable");
@@ -119,6 +127,93 @@ public class Program
         //_client.BulkOverwriteGlobalApplicationCommandsAsync();
     }
 
+
+    private async Task HandleInteractionCreated(SocketInteraction interaction)
+    {
+
+        Console.WriteLine("interactioncreated");
+        if (interaction is SocketMessageComponent component && component.Data.Type == ComponentType.Button)
+        {
+            
+            var embed = component.Message.Embeds.First();
+            var footer = embed.Footer.HasValue ? long.Parse(embed.Footer.Value.Text) : -1;
+
+            await component.RespondAsync($"{dbHelper.GetMessage(_connection, footer)}", ephemeral: true);
+        }
+
+
+    }
+    //private async Task HandleButtonExecuted(SocketMessageComponent component)
+    //{
+        
+    //    var a = component.Message.Content;
+    //    var b = component.Data.Value;
+
+    //    await component.RespondAsync("hello", ephemeral: true);
+
+    //    var c = 
+
+    //}
+
+    private async Task HandleModalSubmitted(SocketModal modal)
+    {
+        //abstract this out to a switch handler like the slash commands
+
+        Console.WriteLine("deferring response");
+        await modal.DeferAsync();
+        Console.WriteLine("Entering Typing State");
+        var typingState = modal.Channel.EnterTypingState();
+        List<SocketMessageComponentData> components = modal.Data.Components.ToList();
+        var prompt = components.First(x => x.CustomId == "user_prompt").Value;
+        //var parsed = double.TryParse(components.First(x => x.CustomId == "temp").Value, out double temp);
+        double result = double.TryParse(components.First(x => x.CustomId == "temp").Value, out double temp) && temp >= 0 && temp <= 1 ? temp : 1;
+
+        Console.WriteLine("Generating Chat response");
+        var chatMessage = await CreateChatResponse(prompt, result);
+        var embed = new EmbedBuilder();
+        var button = new ComponentBuilder().WithButton("See Full Message", "see_full_message", style: ButtonStyle.Secondary);
+        var messageId = await dbHelper.InsertMessage(_connection, chatMessage);
+
+
+        var mention = new AllowedMentions();
+        mention.AllowedTypes = AllowedMentionTypes.Users;
+
+
+        var messageStart = chatMessage.AsSpan(0, Math.Min(500, chatMessage.Length)).ToString() + "...";
+        
+        embed.WithTitle("BallBoi Chat").WithColor(Color.Blue);
+        embed.AddField($"{modal.User.Username}'s Prompt", prompt);
+        embed.AddField("My response", messageStart).WithCurrentTimestamp().WithFooter(footer => footer.Text = $"{messageId}");
+        Console.WriteLine("Sending Message");
+        await modal.Channel.SendMessageAsync(embed: embed.Build(), components: button.Build());
+        typingState.Dispose();
+    }
+
+
+
+    private async Task<string> CreateChatResponse(string prompt, double temp)
+    {
+        //var result = await _openAI.Completions.GetCompletion(prompt);
+
+        var request = new OpenAI_API.Completions.CompletionRequest();
+        request.Prompt = prompt;
+        request.MaxTokens = 250;
+        request.Temperature = temp;
+        Console.WriteLine("Getting text completion " + DateTime.UtcNow);
+        var result = await _openAI.Completions.CreateCompletionAsync(request);
+        Console.WriteLine("Received text completion " + DateTime.UtcNow);
+        return result.Completions[0].Text;
+        //var chat = _openAI.Chat.CreateConversation();
+        //chat.AppendUserInput(prompt);
+        //Console.WriteLine();
+        //var messageStr = new StringBuilder();
+        //await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
+        //{
+        //    Console.Write(res);
+        //    messageStr.Append(res);
+        //}
+        //return messageStr.ToString();
+    }
     private async Task SlashCommandHandler(SocketSlashCommand command)
     {
         try
@@ -130,7 +225,7 @@ public class Program
                 case "addrole": AddRole(command); break;
                 case "removerole": throw new NotImplementedException(); break;
                 case "listrole": ListRoles(command); break;
-                case "chat": ChatAsync(command); break;
+                case "chat": HandleChatTwoAsync(command); break;
                 case "checkavailabletokens": UserTokenCheck(command); break;
                 case "checkmessagetoken": PromptTokenCheck(command); break;
                 case "video": HandleVideoCommand(command); break;
@@ -148,7 +243,14 @@ public class Program
 
     }
 
-
+    //private async Task SendAuditMessage()
+    //{
+    //    var embed = new EmbedBuilder().WithTitle("Test Audit Message");
+    //    embed.Build();
+    //    var channel = _client.GetChannel(1110743242749771826);
+    //    var chanType = channel.GetChannelType();
+        
+    //}
 
     private async Task RegisterCommands()
     {
@@ -164,7 +266,7 @@ public class Program
                 new SlashCommandBuilder().WithName("remember").WithDescription("Most accidents happen at home"),
                 new SlashCommandBuilder().WithName("version").WithDescription("Display version/about information"),
                 new SlashCommandBuilder().WithName("listrole").WithDescription("List the roles a user has").AddOption("user", ApplicationCommandOptionType.User, "The user whose Roles you want to list", isRequired: true),
-                new SlashCommandBuilder().WithName("chat").WithDescription("Ask Ballboi a question").AddOption("message", ApplicationCommandOptionType.String, "Your prompt", isRequired: true),
+                new SlashCommandBuilder().WithName("chat").WithDescription("Ask Ballboi a question"),
                 new SlashCommandBuilder().WithName("checkavailabletokens").WithDescription("Check how many tokens are in your account"),
                 new SlashCommandBuilder().WithName("checkmessagetoken").WithDescription("Check how many tokens a given message is"),
                 new SlashCommandBuilder().WithName("video").WithDescription("link a video to the videos channel").AddOption("url", ApplicationCommandOptionType.String,"the link to the video", isRequired: true),
@@ -212,6 +314,27 @@ public class Program
 
     #region SlashCommands
     //These Should be event based maybe
+
+
+
+    private async void HandleChatTwoAsync(SocketSlashCommand cmd)
+    {
+        try
+        {
+            var modal = new ModalBuilder()
+                        .WithTitle("Chat Bot")
+                        .WithCustomId("chat_bot_prompt")
+                        .AddTextInput("Enter Your Prompt Here:", "user_prompt", placeholder: "Hello World")
+                        .AddTextInput("Set temperature 0-1 (higher = more random)", "temp", placeholder: "1.1");
+            await cmd.RespondWithModalAsync(modal: modal.Build());
+        }
+        catch (Exception e)
+        {
+            
+            Console.WriteLine(e);
+        }
+    }
+
     private async void HandleVideoCommand(SocketSlashCommand cmd)
     {
         var vidUrl = cmd.Data.Options.ElementAt(0).Value.ToString();
@@ -314,52 +437,102 @@ public class Program
                 user = dbHelper.GetUpdatedUser(_connection, user);
                 if (user.AvailableTokens > tokens.Count())
                 {
-                    Console.WriteLine("user has enough tokens");
-                    dbHelper.UpdateUserTokens(_connection, user, tokens.Count());
 
-                    var chat = _openAI.Chat.CreateConversation();
-                    chat.AppendUserInput(prompt);
+                    var modal = new ModalBuilder()
+                        .WithTitle("Chat Bot")
+                        .WithCustomId("chat_bot_prompt")
+                        .AddTextInput("Enter Your Prompt Here:", "user_prompt", placeholder: "Hello World");
+                    await command.RespondWithModalAsync(modal: modal.Build());
 
-                    var channel = command.Channel;
-                    var response = new StringBuilder();
 
-                    response.Append($"{command.User.Username} asked: {prompt}\n\n");
+                    //Console.WriteLine("user has enough tokens");
+                    //dbHelper.UpdateUserTokens(_connection, user, tokens.Count());
 
-                    //iterate over the streaming response from the api and send it out in discord messages.
-                    //discord has a 2000 character limit so we need to split long messages into groups.
-                    int nextTarget = 0;
-                    int curMsgLength = 0;
-                    int curMsg = 0;
-                    RestUserMessage newMsg = null;
-                    await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
-                    {
-                        curMsgLength += res.Length;
-                        response.Append(res.ToString());
-                        Console.WriteLine(response.Length);
-                        if (curMsgLength > 1900)
-                        {
-                            response = new StringBuilder();
-                            response.Append(res.ToString());
-                            curMsg++;
-                            curMsgLength = 0;
-                            await command.Channel.SendMessageAsync("...");
-                            newMsg = await command.Channel.SendMessageAsync(response.ToString());
-                        }
-                        if (curMsg == 0)
-                        {
-                            if (response.Length > nextTarget)
-                            {
-                                nextTarget += 25;
-                                await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
-                            }
-                        }
-                        else
-                        {
-                            await newMsg.ModifyAsync(msg => msg.Content = response.ToString());
+                    //var chat = _openAI.Chat.CreateConversation();
+                    //chat.AppendUserInput(prompt);
 
-                        }
-                    }
-                    await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+                    //var channel = command.Channel;
+                    //var response = new StringBuilder();
+
+                    //response.Append($"{command.User.Username} asked: {prompt}\n\n");
+
+                    ////iterate over the streaming response from the api and send it out in discord messages.
+                    ////discord has a 2000 character limit so we need to split long messages into groups.
+                    //int nextTarget = 0;
+                    //int curMsgLength = 0;
+                    //int curMsg = 0;
+
+
+                    //Console.WriteLine();
+                    //var messageStr = new StringBuilder();
+                    //await foreach( var res in chat.StreamResponseEnumerableFromChatbotAsync())
+                    //{
+                    //    Console.Write(res);
+                    //    messageStr.Append(res);
+                    //}
+
+                    
+                    //string tempFilePath = Path.GetTempPath() + Guid.NewGuid().ToString() + ".txt";
+                    //File.WriteAllText(tempFilePath, messageStr.ToString());
+                    //await command.Channel.SendFileAsync(tempFilePath);
+                    //File.Delete(tempFilePath);
+
+
+
+                    
+
+
+
+
+                    //var embed = new EmbedBuilder
+                    //{
+                    //    Title = "Hello World",
+                    //    Description = "test"
+                    //};
+
+                    //var button = new ComponentBuilder().WithButton("button", "buttonId");
+
+                    //embed.AddField("Hello World", "Hello world again").WithAuthor(command.User.Username);
+                    //embed.AddField("title", "description").WithFooter("Footer").WithCurrentTimestamp();
+                    //embed.AddField("See More", embed.Build());
+                    
+
+
+
+                    //await command.Channel.SendMessageAsync(embed: embed.Build(), components: button.Build());
+
+
+
+                    //RestUserMessage newMsg = null;
+                    //await foreach (var res in chat.StreamResponseEnumerableFromChatbotAsync())
+                    //{
+                    //    curMsgLength += res.Length;
+                    //    response.Append(res.ToString());
+                    //    Console.WriteLine(response.Length);
+                    //    if (curMsgLength > 1900)
+                    //    {
+                    //        response = new StringBuilder();
+                    //        response.Append(res.ToString());
+                    //        curMsg++;
+                    //        curMsgLength = 0;
+                    //        await command.Channel.SendMessageAsync("...");
+                    //        newMsg = await command.Channel.SendMessageAsync(response.ToString());
+                    //    }
+                    //    if (curMsg == 0)
+                    //    {
+                    //        if (response.Length > nextTarget)
+                    //        {
+                    //            nextTarget += 25;
+                    //            await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        await newMsg.ModifyAsync(msg => msg.Content = response.ToString());
+
+                    //    }
+                    //}
+                    //await command.ModifyOriginalResponseAsync(msg => msg.Content = response.ToString());
                     Console.WriteLine("done processing");
                     //dbHelper.InsertPrompt(_connection, user, tokens.Count(), prompt);
                     //var responseTokens = GPT3Tokenizer.Encode(prompt);
