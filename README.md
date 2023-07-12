@@ -2,7 +2,7 @@
 
 A fun discord bot for my friends
 
-Environmnts:
+Environments:
 
 There is one environment currently, a DEV environment where the dev branch lives.
 Master gets deployed to dockerhub, where it gets pulled down onto the production server.
