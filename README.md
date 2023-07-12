@@ -1,6 +1,6 @@
 # BallBoi
 
-A fun dicsord bot for my friends
+A fun discord bot for my friends
 
 Environmnts:
 
